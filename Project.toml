@@ -1,0 +1,16 @@
+name = "TimetableSolver"
+uuid = "df459030-36d8-4de1-905a-e8bbf7c7dfd8"
+authors = ["sushant <sushant.padha@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+ConstraintSolver = "e0e52ebd-5523-408d-9ca3-7641f1cd1405"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+
+[compat]
+ConstraintSolver = "0.7.1"
+DataStructures = "0.11 - 0.18"
+JuMP = "^0.21.3"
+julia = "1.2 - 1.6"
