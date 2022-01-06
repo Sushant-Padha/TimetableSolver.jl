@@ -14,6 +14,14 @@ Once finished, open up a terminal and run `julia --version` to make sure you get
 
 If you don't get an output or a different one, please go through the steps again and install the correct version.
 
+## Package Installation
+
+Open the Julia REPL and run
+
+```
+] add TimetableSolver
+```
+
 ## String
 A string is defined in Julia by encasing it in double quotes (").  
 So, `"hello"` is a string, but `hello` or `'hello'` are not. [Read more](https://docs.julialang.org/en/v1/manual/strings/#String-Basics).

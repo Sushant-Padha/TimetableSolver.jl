@@ -4,21 +4,12 @@ This is a tutorial to create your own timetables and solve them using the packag
 
 This assumes that you have a compatible, working Julia version installed on your system, and have a basic understanding of the language. See the [For Beginners](./beginner.html) page for help.
 
-## Installation
+## Usage
 
-First, we must install the package.
-
-```
-$ julia
-] add TimetableSolver
-```
-
-Then we have to use the package with:
-
+After installing (see [#Package Installation](beginner.html#Package-Installation)), use the package with:
 ```
 using TimetableSolver
 ```
-
 Now, everything defined in the package will available to use which can be used to model our data.
 
 ## Data

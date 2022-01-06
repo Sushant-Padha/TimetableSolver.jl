@@ -9,7 +9,21 @@ Julia package to create a timetable schedule, using [ConstraintSolver.jl](https:
 
 ## Installation
 
+Run the Julia REPL and run
+
+```
+] add TimetableSolver
+```
+
 ## Usage
+
+Use the package with:
+```
+using TimetableSolver
+```
+Now, everything defined in the package will available to use which can be used to model the data.
+
+Read the [docs](https://sushant-padha.github.io/TimetableSolver.jl/stable).
 
 ## Features
 
@@ -18,10 +32,10 @@ Julia package to create a timetable schedule, using [ConstraintSolver.jl](https:
 
 ## Todo
 
-- [ ] Add Github Actions
+- [X] Add docs
+- [X] Add Github Actions
 - [ ] Optimize performance
 - [ ] Refactor code
 - [ ] Add function docstrings
 - [ ] Add tests
-- [ ] Add docs
 - [ ] Add examples
