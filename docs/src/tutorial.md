@@ -2,11 +2,11 @@
 
 This is a tutorial to create your own timetables and solve them using the package.
 
-This assumes that you have a compatible, working Julia version installed on your system, and have a basic understanding of the language. See the [For Beginners](./beginner.html) page for help.
+This assumes that you have a compatible, working Julia version installed on your system, and have a basic understanding of the language. See the [For Beginners](beginner) page for help.
 
 ## Usage
 
-After installing (see [#Package Installation](beginner.html#Package-Installation)), use the package with:
+After installing (see [#Package Installation](beginner/#Package-Installation)), use the package with:
 ```
 using TimetableSolver
 ```
@@ -53,7 +53,7 @@ To be regular, try to use all uppercase strings.
 Note that you can use `"ENG"` for english and `"PHYSICAL"` for physical education, but make sure that you_reuse the _exact same_ strings later in the code.
 
 !!! note Declaring strings in Julia
-    See the [String](./beginner.html#String) section for help.
+    See the [String](beginner/#String) section for help.
     
 
 ### Subject Counts
@@ -68,11 +68,11 @@ subjectcounts_D10 = SubjectCounts(
     "MATH"=>2, "ENG"=>1, "SCIENCE"=>2
 )
 ```
-`subjectcounts_C9` represents the subject counts for grade 9-C (use `C9` instead of `9C` [read more](#division)).  
+`subjectcounts_C9` represents the subject counts for grade 9-C (use `C9` instead of `9C` [read more](#Division)).  
 `subjectcounts_D10` represents the same about grade 10-D.
 
 !!! note Using dictionaries in Julia
-    See the [Dictionary](./beginner.html#Dictionary) section for help.
+    See the [Dictionary](beginner/#Dictionary) section for help.
 
 ### Division
 
@@ -88,12 +88,12 @@ D10 = Division(10, 4)
     Declaring variables starting with a number is not recommended and can lead to unintended consequences.
 
 !!! note Using type instances in Julia
-    See the [Type Instances](./beginner.html#Type-Instances) section for help.
+    See the [Type Instances](beginner/#Type-Instances) section for help.
 
 ### Teacher
 
 The `Teacher` type is used to represent a teacher with all of the data related to them.
-To create a `Teacher` instance, pass the following arguments (example from [#Data](#data) for teacher Mark):
+To create a `Teacher` instance, pass the following arguments (example from [#Data](#Data) for teacher Mark):
 - **Name**: `"Mark Andrews"`, string representing the name of the teacher, can be anything you want it does not affect the model in any way
 - **Id**: `"MARK"`, string representing the id of the teacher, this is the id that is used by the model. 
   This is the string that is returned at the end when the model is solved. Try to use all uppercase letters, and keep the id's short.
@@ -111,7 +111,7 @@ jane = Teacher("Jane Murphy",   "JANE",     ["SCIENCE"],        [10])
 Note that `mark` now represents a teacher instance, with all the data added. `"MARK"` is just a string representing his id, that will be used for solving and displaying the solution.
 
 !!! note Using lists in Julia
-    See the [List](./beginner.html#List) section for help.
+    See the [List](beginner/#List) section for help.
 
 
 ### Period
@@ -124,14 +124,14 @@ You won't have to use this in the code as it is only referenced internally, so y
 ### Timetable
 
 The `Timetable` type is used to represent the actual timetable for a division.  
-To create a `Timetable` instance, pass the following arguments (examples from [#Data](#data) for grade 9-C):
+To create a `Timetable` instance, pass the following arguments (examples from [#Data](#Data) for grade 9-C):
 - **Number of Periods**: `[3, 2]`, 3 periods on the first day and 2 periods on the second day
-- **Subject Counts**: `subjectcounts_C9`, defined in [#Subject Counts](#subject-counts)
-- **Teachers**: `[mark, john, geeta, paul]`, a list of _some_ of the teachers we defined in [#Teacher](#teacher).  
+- **Subject Counts**: `subjectcounts_C9`, defined in [#Subject Counts](#Subject-Counts)
+- **Teachers**: `[mark, john, geeta, paul]`, a list of _some_ of the teachers we defined in [#Teacher](#Teacher).  
   `jane` is not added because she teaches science which is not a valid subject for grade 9. We can add her to the list, but it won't affect anything or be of any use.  
   Do note however, that we have added `mark` as a teacher even though `john` already is added (both teach math). This is done so that in case a conflict arises, where `john` cannot teach this division because he has a period in another one, `mark` can teach for that period in the model.  
   In our case, this won't happen due to the simplicity of the model, but in bigger problems, this should be used to make solving easier.
-- **Division**: `C9`, the division representing 9-C we defined in [#Division](#division)
+- **Division**: `C9`, the division representing 9-C we defined in [#Division](#Division)
 
 For the full data, all the timetables can be represented by:
 ```julia
