@@ -61,7 +61,8 @@ To be regular, try to use all uppercase strings.
 ```
 Note that you can use `"ENG"` for english and `"PHYSICAL"` for physical education, but make sure that you_reuse the _exact same_ strings later in the code.
 
-!!! note For declaring strings in Julia, see the [String](./beginner.html#String) section for help.
+!!! note Declaring strings in Julia
+    See the [String](./beginner.html#String) section for help.
     
 
 ### Subject Counts
@@ -79,7 +80,8 @@ subjectcounts_D10 = SubjectCounts(
 `subjectcounts_C9` represents the subject counts for grade 9-C (use `C9` instead of `9C` [read more](#division)).  
 `subjectcounts_D10` represents the same about grade 10-D.
 
-!!! note For using dictionaries in Julia, see the [Dictionary](./beginner.html#Dictionary) section for help.
+!!! note Using dictionaries in Julia
+    See the [Dictionary](./beginner.html#Dictionary) section for help.
 
 ### Division
 
@@ -94,7 +96,8 @@ D10 = Division(10, 4)
     When you create a division variable, try naming it with the section first, i.e., `C9` instead of `9C`.  
     Declaring variables starting with a number is not recommended and can lead to unintended consequences.
 
-!!! note For using type instances in Julia, see the [Type Instances](./beginner.html#Type-Instances) section for help.
+!!! note Using type instances in Julia
+    See the [Type Instances](./beginner.html#Type-Instances) section for help.
 
 ### Teacher
 
@@ -116,7 +119,8 @@ jane = Teacher("Jane Murphy",   "JANE",     ["SCIENCE"],        [10])
 ```
 Note that `mark` now represents a teacher instance, with all the data added. `"MARK"` is just a string representing his id, that will be used for solving and displaying the solution.
 
-!!! note For using lists in Julia, see the [List](./beginner.html#List) section for help.
+!!! note Using lists in Julia
+    See the [List](./beginner.html#List) section for help.
 
 
 ### Period

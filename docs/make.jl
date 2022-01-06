@@ -5,7 +5,7 @@ DocMeta.setdocmeta!(TimetableSolver, :DocTestSetup, :(using TimetableSolver); re
 
 makedocs(;
     modules=[TimetableSolver],
-    authors="sushant <sushant.padha@gmail.com> and contributors",
+    authors="sushant <sushant.padha@gmail.com>",
     repo="https://github.com/Sushant-Padha/TimetableSolver.jl/blob/{commit}{path}#{line}",
     sitename="TimetableSolver.jl",
     format=Documenter.HTML(;
@@ -20,9 +20,9 @@ makedocs(;
         "How-To" => "how_to.md",
         "Explanation" => "explanation.md",
         "Reference" => [
-            "index.md",
-            "types.md",
-            "solver.md",
+            "reference/index.md",
+            "reference/types.md",
+            "reference/solver.md",
         ]
     ],
 )
