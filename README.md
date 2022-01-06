@@ -1,6 +1,6 @@
 # TimetableSolver.jl
 
-Julia package to create a timetable schedule, using [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl).
+Julia package to create a timetable schedule, using [ConstraintSolver.jl](https://github.com/Wikunia/ConstraintSolver.jl) and [JuMP](https://github.com/jump-dev/JuMP.jl).
 
 ## Installation
 
@@ -13,6 +13,8 @@ Julia package to create a timetable schedule, using [ConstraintSolver.jl](https:
 
 ## Todo
 
-- [ ] Add a user-friendly interface
+- [ ] Optimize performance
+- [ ] Refactor code
 - [ ] Add tests
-- [ ] Further optimize performance
+- [ ] Add docs
+- [ ] Add examples
