@@ -13,8 +13,10 @@ Julia package to create a timetable schedule, using [ConstraintSolver.jl](https:
 
 ## Todo
 
+- [ ] Add Github Actions
 - [ ] Optimize performance
 - [ ] Refactor code
+- [ ] Add function docstrings
 - [ ] Add tests
 - [ ] Add docs
 - [ ] Add examples
