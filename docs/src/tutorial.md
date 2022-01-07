@@ -2,11 +2,21 @@
 
 This is a tutorial to create your own timetables and solve them using the package.
 
-This assumes that you have a compatible, working Julia version installed on your system, and have a basic understanding of the language. See the [For Beginners](beginner) page for help.
+This assumes that you have a compatible, working Julia version installed on your system, and have a basic understanding of the language.
+
+## Installation
+
+Open up a Julia REPL, and type
+
+```julia
+] add TimetableSolver
+```
+
+The package is installed.
 
 ## Usage
 
-After installing (see [#Package Installation](beginner/#Package-Installation)), use the package with:
+After installing, use the package with:
 ```
 using TimetableSolver
 ```
@@ -50,10 +60,7 @@ To be regular, try to use all uppercase strings.
 "mATh" "enG"    # this is not recommended
 :MATH ENG       # this is wrong
 ```
-Note that you can use `"ENG"` for english and `"PHYSICAL"` for physical education, but make sure that you_reuse the _exact same_ strings later in the code.
-
-!!! note Declaring strings in Julia
-    See the [String](beginner/#String) section for help.
+Note that you can use `"ENG"` for english and `"PHYSICAL"` for physical education, but make sure that you reuse the _exact same_ strings later in the code.
     
 
 ### Subject Counts
@@ -71,14 +78,13 @@ subjectcounts_D10 = SubjectCounts(
 `subjectcounts_C9` represents the subject counts for grade 9-C (use `C9` instead of `9C` [read more](#Division)).  
 `subjectcounts_D10` represents the same about grade 10-D.
 
-!!! note Using dictionaries in Julia
-    See the [Dictionary](beginner/#Dictionary) section for help.
 
 ### Division
 
 The `Division` type is used to represent a division of students.
 It stores two fields: grade and section (both integers).  
 For our data, the divisions can be represented as:
+
 ```julia
 C9 = Division(9, 3)
 D10 = Division(10, 4)
@@ -87,20 +93,18 @@ D10 = Division(10, 4)
     When you create a division variable, try naming it with the section first, i.e., `C9` instead of `9C`.  
     Declaring variables starting with a number is not recommended and can lead to unintended consequences.
 
-!!! note Using type instances in Julia
-    See the [Type Instances](beginner/#Type-Instances) section for help.
-
 ### Teacher
 
 The `Teacher` type is used to represent a teacher with all of the data related to them.
 To create a `Teacher` instance, pass the following arguments (example from [#Data](#Data) for teacher Mark):
 - **Name**: `"Mark Andrews"`, string representing the name of the teacher, can be anything you want it does not affect the model in any way
-- **Id**: `"MARK"`, string representing the id of the teacher, this is the id that is used by the model. 
+- **Id**: `"MARK"`, string representing the id of the teacher, this is the id that is used by the model. It must be unique.  
   This is the string that is returned at the end when the model is solved. Try to use all uppercase letters, and keep the id's short.
 - **Subjects**: `["MATH","SCIENCE"]`, a list of all subjects that the teacher can teach
 - **Grades**: `[9,10]`, a list of all grades that a teacher can teach [^1]
 
 For the full data, all the teachers can be represented by:
+
 ```julia
 mark = Teacher("Mark Andrews",  "MARK",     ["MATH","SCIENCE"], [9, 10])
 john = Teacher("John Curry",    "JOHN",     ["MATH"],           [9])
@@ -109,9 +113,6 @@ paul = Teacher("Paul Reid",     "PAUL",     ["SPORTS"],         [9])
 jane = Teacher("Jane Murphy",   "JANE",     ["SCIENCE"],        [10])
 ```
 Note that `mark` now represents a teacher instance, with all the data added. `"MARK"` is just a string representing his id, that will be used for solving and displaying the solution.
-
-!!! note Using lists in Julia
-    See the [List](beginner/#List) section for help.
 
 
 ### Period
@@ -134,6 +135,7 @@ To create a `Timetable` instance, pass the following arguments (examples from [#
 - **Division**: `C9`, the division representing 9-C we defined in [#Division](#Division)
 
 For the full data, all the timetables can be represented by:
+
 ```julia
 tt_C9 = Timetable(
     [3, 2],
@@ -155,11 +157,11 @@ The `Schedule` type is used to represent a full schedule of all timetables. This
 You should only create one schedule for a problem (schedule is synonymous with model here), and add all your timetables to it.
 
 For our data, the schedule will be created as:
+
 ```julia
 schedule = Schedule(tt_C9, tt_D10)
 ```
 
 ---
 
-[^1]: Division represents a group of students studying together. It is a combination of a grade and a section. So, 9-C and 9-D are different divisions, but have the same grade.  
-    Grade is just the level at which the students study, like grade 10, 11. It is represented by a simple integer where needed.
+[^1]: Division represents a group of students studying together. It is a combination of a grade and a section. So, 9-C and 9-D are different divisions, but have the same grade. Grade is just the level at which the students study, like grade 10, 11. It is represented by a simple integer where needed.
