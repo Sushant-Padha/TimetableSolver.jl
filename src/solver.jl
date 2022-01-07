@@ -3,9 +3,17 @@ using JuMP
 using ConstraintSolver
 using DataStructures: OrderedDict
 
+# TODO: add return type for functions
+
 const CS = ConstraintSolver
 
-# alias for union of VariableRef and AffExpr
+"""
+    VarRefOrExpr = Union{VariableRef,AffExpr}
+
+Represents either a model variable reference or expression reference.
+
+Alias for union of VariableRef and AffExpr.
+"""
 VarRefOrExpr = Union{VariableRef,AffExpr}
 
 #=
@@ -26,16 +34,15 @@ Mappings are generated and stored in VariableData struct.
     VariableData
 
 Immutable struct to store data related to divisions, variables and values,
-and their mappings from ints to strings.
+and their mappings from ints to strings, because the solver only works on ints.
 
-Because the solver only works on ints.
+# Constructors
+- `VariableData(schedule::Schedule)::VariableData`
 
 Fields:
-- `divvarval_maps::OrderedDict{Symbol,OrderedDict}`:
-Keys are a symbol `:subject` or `:teacher``. Values are map of ints (div)
- to 2-tuple of vecs of ints (var, val).
-- `divvarval_mapstrs::OrderedDict{Symbol,OrderedDict}`:
-Same as `div_var_val_map` but with strings instead of ints.
+- `divvarval_maps::OrderedDict{Symbol,OrderedDict}`: Keys are a symbol `:subject` or `:teacher`.
+Values are map of ints (div) to 2-tuple of vecs of ints (var, val).
+- `divvarval_mapstrs::OrderedDict{Symbol,OrderedDict}`: Same as `div_var_val_map` but with strings instead of ints.
 
 - `alldivs::Vector{Int}`: Vector of all divs as ints.
 - `allvars::Vector{Int}`: Vector of all vars as ints. (no `:subject` `:teacher` bifurcation)
@@ -206,6 +213,21 @@ struct VariableData
     end
 end
 
+# TODO: add kwargs arg to this and other function to pass kwargs to Model()
+"""
+    get_model(vardata::VariableData, timeout::Float64=Inf, all_solutions::Bool=false)::Tuple{Model,OrderedDict}
+
+Return a JuMP model created using `vardata`, and an OrderedDict of the variables defined in the model.
+
+# Arguments
+- `vardata::VariableData`: VariableData object representing the variables and constraints to be added to the model.
+- `timeout::Float64=Inf`: Float representing the maximum time to run the model.
+- `all_solutions::Bool=false`: Bool representing whether to return all solutions or just the first.
+
+# Notes
+- Create a model with the correct variables, and adds constraints to the model.  
+- The variables defined are anonymous, so they are stored in an OrderedDict mapped to their int representation.
+"""
 function get_model(vardata::VariableData, timeout::Float64 = Inf, all_solutions::Bool = false
 )::Tuple{Model,OrderedDict}
     # create a constraint solver model and set ConstraintSolver as the optimizer
@@ -254,6 +276,16 @@ function get_model(vardata::VariableData, timeout::Float64 = Inf, all_solutions:
     return m, modelvars
 end
 
+"""
+    define_variables!(m::Model, vardata::VariableData)::OrderedDict{Int,VarRefOrExpr}
+
+Define variables in the model `m` using the `vardata` object.
+Return an OrderedDict mapping the int representation of the variable to the variable reference/expression reference.
+
+# Notes
+- Modify the model `m` in place.
+- See [VarRefOrExpr](@ref).
+"""
 function define_variables!(
     m::Model, vardata::VariableData)::OrderedDict{Int,VarRefOrExpr}
     divvarval_maps = vardata.divvarval_maps
@@ -275,6 +307,14 @@ function define_variables!(
     return modelvars
 end
 
+"""
+    define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+
+Define subject constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
+
+# Notes
+- Modify the model `m` in place.
+"""
 function define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     schedule = vardata.schedule
     divvarval_maps = vardata.divvarval_maps
@@ -311,6 +351,14 @@ function define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::V
     end
 end
 
+"""
+    define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+
+Define subject-teacher constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
+
+# Notes
+- Modify the model `m` in place.
+"""
 function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     divvarval_maps = vardata.divvarval_maps
     inversevalmap = vardata.inversevalmap
@@ -359,6 +407,14 @@ function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, var
     return nothing
 end
 
+"""
+    define_teacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+
+Define teacher constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
+
+# Notes
+- Modify the model `m` in place.
+"""
 function define_teacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     # variables with same row,period should have different teachers
     divvarval_maps = vardata.divvarval_maps
@@ -386,6 +442,16 @@ function define_teacherconstraints!(m::Model, modelvars::OrderedDict, vardata::V
     return nothing
 end
 
+"""
+    define_constraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+
+Define all constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
+
+# Notes
+- Modify the model `m` in place.
+- Call [`define_subjectconstraints!`](@ref), [`define_subjectteacherconstraints!`](@ref)
+and [`define_teacherconstraints!`](@ref) internally, in the respective order.
+"""
 function define_constraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     define_subjectconstraints!(m, modelvars, vardata)
 
@@ -396,6 +462,15 @@ function define_constraints!(m::Model, modelvars::OrderedDict, vardata::Variable
     return nothing
 end
 
+"""
+    get_solution(m::Model, modelvars::OrderedDict, vardata::VariableData)::Tuple{OrderedDict{Int,Int},MOI.TerminationStatusCode}
+
+Return a solution and status code after solving the given model `m` and using model variables `modelvars` and variable data `vardata` to access the solution values.
+
+# Notes
+- Model is optimally solved only if the status code is [`MOI.OPTIMAL`](https://jump.dev/JuMP.jl/stable/moi/reference/models/#MathOptInterface.TerminationStatusCode).
+- Solution is a mapping from variable to its value (both as ints).
+"""
 function get_solution(
     m::Model, modelvars::OrderedDict, vardata::VariableData)::Tuple{OrderedDict{Int,Int},MOI.TerminationStatusCode}
     # solve model
@@ -428,6 +503,14 @@ function get_solution(
     return solution, status
 end
 
+"""
+    convertsolution(rawsolution::OrderedDict{Int,Int}, vardata::VariableData)::OrderedDict{String,String}
+
+Return a solution in the form of a mapping from variable to its value (both as strings).
+
+# Notes
+- Convert an `Int=>Int` solution to a `String=>String` one using the `inverse*` mappings defined in `vardata`.
+"""
 function convertsolution(
     rawsolution::OrderedDict{Int,Int}, vardata::VariableData)::OrderedDict{String,String}
     solution = OrderedDict{String,String}()
@@ -442,6 +525,14 @@ function convertsolution(
     return solution
 end
 
+"""
+    applysolution!(schedule::Schedule, solution::OrderedDict{String,String})::Nothing
+
+Apply a solution (of strings) to the given schedule.
+
+# Notes
+- Modify the schedule in place.
+"""
 function applysolution!(schedule::Schedule, solution::OrderedDict{String,String})::Nothing
     # iterate over every var and val in solution
     for (var, val) in solution
@@ -450,6 +541,19 @@ function applysolution!(schedule::Schedule, solution::OrderedDict{String,String}
     end
 end
 
+"""
+    solve!(schedule::Schedule, timeout::Float64 = Inf, all_solutions::Bool = false)::Tuple{OrderedDict{String,String},MOI.TerminationStatusCode}
+
+Solve a given schedule in place and return a `String=>String` solution and status code.
+
+# Arguments
+- `schedule::Schedule`: Schedule object representing the problem.
+- `timeout::Float64=Inf`: Float representing the maximum time to run the model.
+- `all_solutions::Bool=false`: Bool representing whether to return all solutions or just the first.
+
+# Notes
+- Schedule is optimally solved only if the status code is [`MOI.OPTIMAL`](https://jump.dev/JuMP.jl/stable/moi/reference/models/#MathOptInterface.TerminationStatusCode).
+"""
 function solve!(
     schedule::Schedule, timeout::Float64 = Inf, all_solutions::Bool = false
 )::Tuple{OrderedDict{String,String},MOI.TerminationStatusCode}
