@@ -1,7 +1,7 @@
 name = "TimetableSolver"
 uuid = "df459030-36d8-4de1-905a-e8bbf7c7dfd8"
 authors = ["sushant <sushant.padha@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 ConstraintSolver = "e0e52ebd-5523-408d-9ca3-7641f1cd1405"
