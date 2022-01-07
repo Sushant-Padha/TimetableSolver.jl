@@ -176,12 +176,12 @@ struct VariableData
             :subject => OrderedDict(),
             :teacher => OrderedDict()
         )
-    
+
         # fill divvarval_maps with data
         for (div, tt) in schedule.data
             subjectvals::Vector{String} = []
             teachervals::Vector{String} = []
-    
+
             # add dom vals for both teachers and subjects
             for (subject, teachers) in tt.subjectteachers
                 push!(subjectvals, subject)
@@ -189,10 +189,10 @@ struct VariableData
                     push!(teachervals, t)
                 end
             end
-    
+
             subjectvars::Vector{String} = []
             teachervars::Vector{String} = []
-    
+
             for (i, row) in enumerate(tt.data)
                 for j in (1:length(row))
                     # add subject variable
@@ -203,12 +203,16 @@ struct VariableData
                     push!(teachervars, teacher)
                 end
             end
-    
+
+            # only use unique vals
+            subjectvals = unique(subjectvals)
+            teachervals = unique(teachervals)
+
             # create a key for every div, in teacher and subject
             divvarval_maps[:subject][div] = (subjectvars, subjectvals)
             divvarval_maps[:teacher][div] = (teachervars, teachervals)
         end
-    
+
         return divvarval_maps
     end
 end
