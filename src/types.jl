@@ -284,8 +284,7 @@ Modify timetable `tt` by replacing the value of the field `var` with `val`.
 - Both `var` and `val` are strings.
 - Row, period and type of variable are inferred by splitting `var` at `"_"`, and taking last 3 elements.
 - If `type == "subject"` then the subject of the corresponding row and period is set to `val`.
-- If `type == "teacher"` then the teacher of the corresponding row and period is set to `val`
-(after getting teacher object from teacher string using `tt.teacher_strs`).
+- If `type == "teacher"` then the teacher of the corresponding row and period is set to `val` (after getting teacher object from teacher string using `tt.teacher_strs`).
 """
 function modify!(tt::Timetable, var::String, val::String)
     # split var

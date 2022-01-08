@@ -1,4 +1,3 @@
-using Test
 using TimetableSolver
 
 C9 = Division(9, 3)

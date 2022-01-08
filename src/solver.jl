@@ -41,7 +41,7 @@ and their mappings from ints to strings, because the solver only works on ints.
 
 Fields:
 - `divvarval_maps::OrderedDict{Symbol,OrderedDict}`: Keys are a symbol `:subject` or `:teacher`.
-Values are map of ints (div) to 2-tuple of vecs of ints (var, val).
+  Values are map of ints (div) to 2-tuple of vecs of ints (var, val).
 - `divvarval_mapstrs::OrderedDict{Symbol,OrderedDict}`: Same as `div_var_val_map` but with strings instead of ints.
 
 - `alldivs::Vector{Int}`: Vector of all divs as ints.
@@ -288,7 +288,7 @@ Return an OrderedDict mapping the int representation of the variable to the vari
 
 # Notes
 - Modify the model `m` in place.
-- See [VarRefOrExpr](@ref).
+- See [`VarRefOrExpr`](@ref).
 """
 function define_variables!(
     m::Model, vardata::VariableData)::OrderedDict{Int,VarRefOrExpr}
@@ -454,7 +454,7 @@ Define all constraints in the model `m` using the `vardata` object and the model
 # Notes
 - Modify the model `m` in place.
 - Call [`define_subjectconstraints!`](@ref), [`define_subjectteacherconstraints!`](@ref)
-and [`define_teacherconstraints!`](@ref) internally, in the respective order.
+  and [`define_teacherconstraints!`](@ref) internally, in the respective order.
 """
 function define_constraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     define_subjectconstraints!(m, modelvars, vardata)
