@@ -1,17 +1,17 @@
 # Solver
 
 ```@docs
-VarRefOrExpr
-VariableData
-VariableData()
-get_model()
-define_variables!()
-define_subjectconstraints!()
-define_subjectteacherconstraints!()
-define_teacherconstraints!()
-define_constraints!()
-get_solution()
-convertsolution()
-applysolution!()
-solve!()
+TimetableSolver.VarRefOrExpr
+TimetableSolver.VariableData
+TimetableSolver.VariableData()
+TimetableSolver.get_model()
+TimetableSolver.define_variables!()
+TimetableSolver.define_subjectconstraints!()
+TimetableSolver.define_subjectteacherconstraints!()
+TimetableSolver.define_teacherconstraints!()
+TimetableSolver.define_constraints!()
+TimetableSolver.get_solution()
+TimetableSolver.convertsolution()
+TimetableSolver.applysolution!()
+TimetableSolver.solve!()
 ```
