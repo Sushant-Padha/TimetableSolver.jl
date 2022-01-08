@@ -8,7 +8,7 @@ using DataStructures: OrderedDict
 const CS = ConstraintSolver
 
 """
-    VarRefOrExpr = Union{VariableRef,AffExpr}
+    VarRefOrExpr
 
 Represents either a model variable reference or expression reference.
 

@@ -3,17 +3,16 @@
 ```@docs
 SubjectCounts
 Division
-Division(grade::Int, section::Int)
-Division(grade::Int, section::Int, section_str::String)
+Division()
 Teacher
-Teacher(name::String, id::String, subjects::Vector{String}, grades::Vector{Int})
+Teacher()
 Period
 Timetable
-Timetable(numperiods::Vector{Int}, subjectcounts::SubjectCounts, teachers::Vector{Teacher}, division::Division)
-get_subjectteachers(subjects::Vector{String},teachers::Vector{Teacher})
+Timetable()
 Base.string(tt::Timetable)
 Schedule
-Schedule(timetables...)
+Schedule()
 Base.string(s::Schedule)
-modify!
+modify!(s::Schedule, var::String, val::String)
+modify!(tt::Timetable, var::String, val::String)
 ```
