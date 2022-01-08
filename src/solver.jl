@@ -36,9 +36,6 @@ Mappings are generated and stored in VariableData struct.
 Immutable struct to store data related to divisions, variables and values,
 and their mappings from ints to strings, because the solver only works on ints.
 
-# Constructors
-- `VariableData(schedule::Schedule)::VariableData`
-
 Fields:
 - `divvarval_maps::OrderedDict{Symbol,OrderedDict}`: Keys are a symbol `:subject` or `:teacher`.
   Values are map of ints (div) to 2-tuple of vecs of ints (var, val).
@@ -74,147 +71,160 @@ struct VariableData
     inversevalmap::OrderedDict{String,Int}
 
     schedule::Schedule
+end
 
-    function VariableData(schedule::Schedule)::VariableData
-        # get divvarval_mapstrs
-        divvarval_mapstrs = get_divvarval_mapstrs(schedule)
+"""
+    VariableData(schedule::Schedule)::VariableData
 
-        # extract str representations of all data
-        alldiv_strs = Vector{String}([])
-        allvar_strs = OrderedDict{Symbol,Vector{String}}(
-            :subject => [],
-            :teacher => []
-        )
-        allval_strs = OrderedDict{Symbol,Vector{String}}(
-            :subject => [],
-            :teacher => []
-        )
-        # symbol is `:subject` or `:teacher`
-        # symbol_map is div_var_val_map_strs but for either subject or teacher only
-        for (symbol, symbolmap) in divvarval_mapstrs
-            for (div_str, varval_strs) in symbolmap
-                push!(alldiv_strs, div_str)
-                for var_str in varval_strs[1]
-                    # push the var to the proper key in all_var_strs
-                    push!(allvar_strs[symbol], var_str)
-                end
-                for val_str in varval_strs[2]
-                    # push the val to the proper key in all_var_strs
-                    push!(allval_strs[symbol], val_str)
-                end
+Return `VariableData` instance with all the fields filled based on the schedule.
+"""
+function VariableData(schedule::Schedule)::VariableData
+    # get divvarval_mapstrs
+    divvarval_mapstrs = get_divvarval_mapstrs(schedule)
+
+    # extract str representations of all data
+    alldiv_strs = Vector{String}([])
+    allvar_strs = OrderedDict{Symbol,Vector{String}}(
+        :subject => [],
+        :teacher => []
+    )
+    allval_strs = OrderedDict{Symbol,Vector{String}}(
+        :subject => [],
+        :teacher => []
+    )
+    # symbol is `:subject` or `:teacher`
+    # symbol_map is div_var_val_map_strs but for either subject or teacher only
+    for (symbol, symbolmap) in divvarval_mapstrs
+        for (div_str, varval_strs) in symbolmap
+            push!(alldiv_strs, div_str)
+            for var_str in varval_strs[1]
+                # push the var to the proper key in all_var_strs
+                push!(allvar_strs[symbol], var_str)
+            end
+            for val_str in varval_strs[2]
+                # push the val to the proper key in all_var_strs
+                push!(allval_strs[symbol], val_str)
             end
         end
-
-        # remove duplicate values from allval_strs
-        allval_strs[:subject] = unique(allval_strs[:subject])
-        allval_strs[:teacher] = unique(allval_strs[:teacher])
-
-        # remove duplicate values from alldiv_strs
-        alldiv_strs = unique(alldiv_strs)
-
-        # define int representations of all data
-        # and int to str mappings
-        alldivs = Vector{Int}(1:length(alldiv_strs))
-        divmap::OrderedDict{Int,String} = OrderedDict(
-            enumerate(alldiv_strs)
-        )
-        inversedivmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in divmap)
-
-        allvars = Vector{Int}(1:(length(allvar_strs[:subject]))+length(allvar_strs[:teacher]))
-        # nested list comp
-        # return var_str for var_str in symbol_var_strs which are in all_var_strs
-        varmap::OrderedDict{Int,String} = OrderedDict(
-            enumerate([v for (_, var_strs) in allvar_strs for v in var_strs])
-        )
-        inversevarmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in varmap)
-
-        allvals = Vector{Int}(1:(length(allval_strs[:subject]))+length(allval_strs[:teacher]))
-        # nested list comp (same as for `var_map`)
-        valmap::OrderedDict{Int,String} = OrderedDict(
-            enumerate([v for (_, val_strs) in allval_strs for v in val_strs])
-        )
-        inversevalmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in valmap)
-
-        # dict to store ordereddict of all vars and vals mapped to divs
-        # dict keys are :subject and :teacher
-        divvarval_maps::OrderedDict{Symbol,OrderedDict} = OrderedDict(
-            :subject => OrderedDict(),
-            :teacher => OrderedDict()
-        )
-
-        # generate values for div_var_val_map
-        # symbol is `:subject` or `:teacher`
-        # symbol_map is divvarval_mapstrs but for either subject or teacher only
-        for (symbol, symbolmap) in divvarval_mapstrs
-            for (i, (div_str, (var_strs, val_strs))) in enumerate(symbolmap)
-                # int representing current div
-                div::Int = inversedivmap[div_str]
-
-                # ints representing current vars
-                vars = Vector{Int}([inversevarmap[v] for v in var_strs])
-                vals = Vector{Int}([inversevalmap[v] for v in val_strs])
-
-                # add key value pair to div_var_val_map
-                divvarval_maps[symbol][div] = (vars, vals)
-            end
-        end
-
-        return new(
-            divvarval_maps, divvarval_mapstrs,
-            alldivs, allvars, allvals,
-            divmap, varmap, valmap, inversedivmap, inversevarmap, inversevalmap,
-            schedule
-        )
     end
 
-    function get_divvarval_mapstrs(schedule::Schedule)::OrderedDict{Symbol,OrderedDict}
-        # dict to store ordereddict of all vars and vals mapped to divs
-        # dict keys are :subject and :teacher
-        divvarval_maps::OrderedDict{
-            Symbol,OrderedDict{String,Tuple{Vector{String},Vector{String}}}
-        } = OrderedDict(
-            :subject => OrderedDict(),
-            :teacher => OrderedDict()
-        )
+    # remove duplicate values from allval_strs
+    allval_strs[:subject] = unique(allval_strs[:subject])
+    allval_strs[:teacher] = unique(allval_strs[:teacher])
 
-        # fill divvarval_maps with data
-        for (div, tt) in schedule.data
-            subjectvals::Vector{String} = []
-            teachervals::Vector{String} = []
+    # remove duplicate values from alldiv_strs
+    alldiv_strs = unique(alldiv_strs)
 
-            # add dom vals for both teachers and subjects
-            for (subject, teachers) in tt.subjectteachers
-                push!(subjectvals, subject)
-                for t in teachers
-                    push!(teachervals, t)
-                end
+    # define int representations of all data
+    # and int to str mappings
+    alldivs = Vector{Int}(1:length(alldiv_strs))
+    divmap::OrderedDict{Int,String} = OrderedDict(
+        enumerate(alldiv_strs)
+    )
+    inversedivmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in divmap)
+
+    allvars = Vector{Int}(1:(length(allvar_strs[:subject]))+length(allvar_strs[:teacher]))
+    # nested list comp
+    # return var_str for var_str in symbol_var_strs which are in all_var_strs
+    varmap::OrderedDict{Int,String} = OrderedDict(
+        enumerate([v for (_, var_strs) in allvar_strs for v in var_strs])
+    )
+    inversevarmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in varmap)
+
+    allvals = Vector{Int}(1:(length(allval_strs[:subject]))+length(allval_strs[:teacher]))
+    # nested list comp (same as for `var_map`)
+    valmap::OrderedDict{Int,String} = OrderedDict(
+        enumerate([v for (_, val_strs) in allval_strs for v in val_strs])
+    )
+    inversevalmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in valmap)
+
+    # dict to store ordereddict of all vars and vals mapped to divs
+    # dict keys are :subject and :teacher
+    divvarval_maps::OrderedDict{Symbol,OrderedDict} = OrderedDict(
+        :subject => OrderedDict(),
+        :teacher => OrderedDict()
+    )
+
+    # generate values for div_var_val_map
+    # symbol is `:subject` or `:teacher`
+    # symbol_map is divvarval_mapstrs but for either subject or teacher only
+    for (symbol, symbolmap) in divvarval_mapstrs
+        for (i, (div_str, (var_strs, val_strs))) in enumerate(symbolmap)
+            # int representing current div
+            div::Int = inversedivmap[div_str]
+
+            # ints representing current vars
+            vars = Vector{Int}([inversevarmap[v] for v in var_strs])
+            vals = Vector{Int}([inversevalmap[v] for v in val_strs])
+
+            # add key value pair to div_var_val_map
+            divvarval_maps[symbol][div] = (vars, vals)
+        end
+    end
+
+    return VariableData(
+        divvarval_maps, divvarval_mapstrs,
+        alldivs, allvars, allvals,
+        divmap, varmap, valmap, inversedivmap, inversevarmap, inversevalmap,
+        schedule
+    )
+end
+
+"""
+    get_divvarval_mapstrs(schedule::Schedule)::OrderedDict{Symbol,OrderedDict}
+
+Return `OrderedDict` mapping symbol (either `:subject` or `:teacher`), to an `OrderedDict`.
+
+The first-order values (`OrderedDict`), are mappings from division string, to a 2-tuple of variables and values.
+"variables" and "values" are vectors of variable strings and value strings.
+"""
+function get_divvarval_mapstrs(schedule::Schedule)::OrderedDict{Symbol,OrderedDict}
+    # dict to store ordereddict of all vars and vals mapped to divs
+    # dict keys are :subject and :teacher
+    divvarval_maps::OrderedDict{
+        Symbol,OrderedDict{String,Tuple{Vector{String},Vector{String}}}
+    } = OrderedDict(
+        :subject => OrderedDict(),
+        :teacher => OrderedDict()
+    )
+
+    # fill divvarval_maps with data
+    for (div, tt) in schedule.data
+        subjectvals::Vector{String} = []
+        teachervals::Vector{String} = []
+
+        # add dom vals for both teachers and subjects
+        for (subject, teachers) in tt.subjectteachers
+            push!(subjectvals, subject)
+            for t in teachers
+                push!(teachervals, t)
             end
-
-            subjectvars::Vector{String} = []
-            teachervars::Vector{String} = []
-
-            for (i, row) in enumerate(tt.data)
-                for j in (1:length(row))
-                    # add subject variable
-                    subject = "$(div)_$(i)_$(j)_subject"
-                    push!(subjectvars, subject)
-                    # add teacher variable
-                    teacher = "$(div)_$(i)_$(j)_teacher"
-                    push!(teachervars, teacher)
-                end
-            end
-
-            # only use unique vals
-            subjectvals = unique(subjectvals)
-            teachervals = unique(teachervals)
-
-            # create a key for every div, in teacher and subject
-            divvarval_maps[:subject][div] = (subjectvars, subjectvals)
-            divvarval_maps[:teacher][div] = (teachervars, teachervals)
         end
 
-        return divvarval_maps
+        subjectvars::Vector{String} = []
+        teachervars::Vector{String} = []
+
+        for (i, row) in enumerate(tt.data)
+            for j in (1:length(row))
+                # add subject variable
+                subject = "$(div)_$(i)_$(j)_subject"
+                push!(subjectvars, subject)
+                # add teacher variable
+                teacher = "$(div)_$(i)_$(j)_teacher"
+                push!(teachervars, teacher)
+            end
+        end
+
+        # only use unique vals
+        subjectvals = unique(subjectvals)
+        teachervals = unique(teachervals)
+
+        # create a key for every div, in teacher and subject
+        divvarval_maps[:subject][div] = (subjectvars, subjectvals)
+        divvarval_maps[:teacher][div] = (teachervars, teachervals)
     end
+
+    return divvarval_maps
 end
 
 # TODO: add kwargs arg to this and other function to pass kwargs to Model()

@@ -32,34 +32,34 @@ struct Division
     section::Int
     section_str::String
     __str__::String  # precomputed string representation of the division
+end
 
-    """
-        Division(grade::Int, section::Int)
-    
-    Return a division with the given grade and section.
-    `section_str` is inferred as the nth letter of the alphabet, where n=`section`.
+"""
+    Division(grade::Int, section::Int)
 
-    Calls the second constructor with `section_str` as the third argument.
-    """
-    function Division(grade::Int, section::Int)
-        if (section < 1) || (section > 26)
-            error("`section::Int` not in bounds [1, 26]. Provide the `section_str::String` parameter.")
-        end
-        # uppercase letters start from char 65
-        section_str = string(Char(64 + section))
-        return Division(grade, section, section_str)
+Return a division with the given grade and section.
+`section_str` is inferred as the nth letter of the alphabet, where n=`section`.
+
+Call the second constructor with `section_str` as the third argument.
+"""
+function Division(grade::Int, section::Int)
+    if (section < 1) || (section > 26)
+        error("`section::Int` not in bounds [1, 26]. Provide the `section_str::String` parameter.")
     end
-    
-    """
-        Division(grade::Int, section::Int, section_str::String)
-    
-    Return a division with the given grade, section, section string and precomputed string representation.
-    """
-    function Division(grade::Int, section::Int, section_str::String)
-        # precompute __str__
-        __str__ = "$(grade)-$(section_str)"
-        return new(grade, section, section_str, __str__)
-    end
+    # uppercase letters start from char 65
+    section_str = string(Char(64 + section))
+    return Division(grade, section, section_str)
+end
+
+"""
+    Division(grade::Int, section::Int, section_str::String)
+
+Return a division with the given grade, section, section string and precomputed string representation.
+"""
+function Division(grade::Int, section::Int, section_str::String)
+    # precompute __str__
+    __str__ = "$(grade)-$(section_str)"
+    return Division(grade, section, section_str, __str__)
 end
 Base.string(d::Division) = d.__str__
 Base.show(io::IO, d::Division) = print(io, string(d))
@@ -85,16 +85,16 @@ struct Teacher
     subjects::Vector{String}
     grades::Vector{Int}
     __str__::String  # precomputed string representation of the teacher
-    """
-        Teacher(name::String, id::String, subjects::Vector{String}, grades::Vector{Int})
-    
-    Return a teacher with the given name, id, subjects, grades and precomputed string representation.
-    """
-    function Teacher(name::String, id::String, subjects::Vector{String}, grades::Vector{Int})
-        # precompute __str__
-        __str__ = id
-        return new(name, id, subjects, grades, __str__)
-    end
+end
+"""
+    Teacher(name::String, id::String, subjects::Vector{String}, grades::Vector{Int})
+
+Return a teacher with the given name, id, subjects, grades and precomputed string representation.
+"""
+function Teacher(name::String, id::String, subjects::Vector{String}, grades::Vector{Int})
+    # precompute __str__
+    __str__ = id
+    return Teacher(name, id, subjects, grades, __str__)
 end
 Base.string(t::Teacher) = t.__str__
 Base.show(io::IO, t::Teacher) = print(io, string(t))
@@ -148,47 +148,47 @@ mutable struct Timetable
     teacher_strs::OrderedDict{String,Teacher}
     division::Division
     data::Vector{Vector{Period}}
+end
+"""
+    Timetable(numperiods::Vector{Int}, subjectcounts::SubjectCounts, teachers::Vector{Teacher}, division::Division)
 
-    """
-        Timetable(numperiods::Vector{Int}, subjectcounts::SubjectCounts, teachers::Vector{Teacher}, division::Division)
-    
-    Return a timetable with the given number of periods, subject counts, teachers and division.
+Return a timetable with the given number of periods, subject counts, teachers and division.
 
-    # Notes
-    - Fields `subjects`, `subjectteachers`, `teacher_strs` and `data` are inferred.
-    - `data` stores the actual vector of vectors of periods, initialized with (`nothing`, `nothing`) as arguments.
-    """
-    function Timetable(numperiods::Vector{Int}, subjectcounts::SubjectCounts,
-        teachers::Vector{Teacher}, division::Division)
-        subjects = collect(String, keys(subjectcounts))
-        subjectteachers = get_subjectteachers(subjects,teachers)
-        teacher_strs = OrderedDict(zip(string.(teachers), teachers))
-        # fill data
-        data = [[] for _ in numperiods]
-        for (i,n) in enumerate(numperiods)
-            data[i] = [Period(nothing, nothing) for _ in 1:n]
-        end
-        return new(numperiods, subjectcounts, subjects, teachers,
-        subjectteachers, teacher_strs, division, data)
+# Notes
+- Fields `subjects`, `subjectteachers`, `teacher_strs` and `data` are inferred.
+- `data` stores the actual vector of vectors of periods, initialized with (`nothing`, `nothing`) as arguments.
+"""
+function Timetable(numperiods::Vector{Int}, subjectcounts::SubjectCounts,
+    teachers::Vector{Teacher}, division::Division)
+    subjects = collect(String, keys(subjectcounts))
+    subjectteachers = get_subjectteachers(subjects,teachers)
+    teacher_strs = OrderedDict(zip(string.(teachers), teachers))
+    # fill data
+    data = [[] for _ in numperiods]
+    for (i,n) in enumerate(numperiods)
+        data[i] = [Period(nothing, nothing) for _ in 1:n]
     end
-    """
-        get_subjectteachers(subjects::Vector{String}, teachers::Vector{Teacher})
-    
-    Return an OrderedDict mapping subjects to valid teachers, based on `subjects` and `teachers`.
-    """
-    function get_subjectteachers(subjects::Vector{String},teachers::Vector{Teacher})
-        # initialize dict with empty list mapped to each subject
-        subjectteachers = OrderedDict{String,Vector{String}}(s=>[] for s in subjects)
-        for t in teachers, s in subjects
-            if s in t.subjects
-                # push the teacher to the subject's list
-                push!(subjectteachers[s], string(t))
-            end
+    return Timetable(numperiods, subjectcounts, subjects, teachers,
+    subjectteachers, teacher_strs, division, data)
+end
+
+"""
+    get_subjectteachers(subjects::Vector{String}, teachers::Vector{Teacher})
+
+Return an OrderedDict mapping subjects to valid teachers, based on `subjects` and `teachers`.
+"""
+function get_subjectteachers(subjects::Vector{String},teachers::Vector{Teacher})
+    # initialize dict with empty list mapped to each subject
+    subjectteachers = OrderedDict{String,Vector{String}}(s=>[] for s in subjects)
+    for t in teachers, s in subjects
+        if s in t.subjects
+            # push the teacher to the subject's list
+            push!(subjectteachers[s], string(t))
         end
-        # filter out empty lists
-        subjectteachers = filter(x->length(x)>0, subjectteachers)
-        return subjectteachers
     end
+    # filter out empty lists
+    subjectteachers = filter(x->length(x)>0, subjectteachers)
+    return subjectteachers
 end
 """
     Base.string(tt::Timetable)::String
@@ -231,24 +231,25 @@ Mutable type for representing a schedule, i.e., a collection of timetables.
 """
 mutable struct Schedule
     data::OrderedDict{String,Timetable}
-    """
-        Schedule(timetables...)
-    
-    Return a schedule instance using the given timetables.
-
-    # Notes
-    `data` is an OrderedDict mapping division's string representation to the timetable.
-    """
-    function Schedule(timetables...)
-        # mapping div's string representation to timetable
-        data = OrderedDict{String,Timetable}()
-        for tt in timetables
-            div = string(tt.division)
-            data[div] = tt
-        end
-        return new(data)
-    end
 end
+"""
+    Schedule(timetables...)
+
+Return a schedule instance using the given timetables.
+
+# Notes
+`data` is an OrderedDict mapping division's string representation to the timetable.
+"""
+function Schedule(timetables...)
+    # mapping div's string representation to timetable
+    data = OrderedDict{String,Timetable}()
+    for tt in timetables
+        div = string(tt.division)
+        data[div] = tt
+    end
+    return Schedule(data)
+end
+
 """
     Base.string(s::Schedule)::String
 
