@@ -20,8 +20,8 @@ function runtests(testfilenames)
     end
 end
 
-_, time, bytes, _... = @timed runtests(TESTFILENAMES)
+_, _time, bytes, _... = @timed runtests(TESTFILENAMES)
 
-time, mb = round(time; digits=3), round(bytes / 1024 / 1024; digits=0)
+_time, mb = round(_time; digits=3), round(bytes / 1024 / 1024; digits=0)
 
 printstyled("All tests took $time seconds, and used $(mb) megabytes.\n\n"; bold=true)
