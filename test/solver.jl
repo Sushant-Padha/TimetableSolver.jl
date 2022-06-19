@@ -35,9 +35,7 @@ printinfo = get_printinfo("  ")
         printinfo("└ Done."; pop=true)
     end
     @testset "general" begin
-        printinfo(
-            "┌ Testing general values with random schedules..."; prefix="│ "
-        )
+        printinfo("┌ Testing general values with random schedules..."; prefix="│ ")
 
         function test_random_schedules(
             nums::Vector{Int}, numperiods::Vector{Int}, iterations::Int
@@ -114,7 +112,7 @@ printinfo = get_printinfo("  ")
 
         printinfo("└ Done."; pop=true)
     end
-    printinfo("└ Done.", pop=true)
+    printinfo("└ Done."; pop=true)
 end
 @testset "Model" begin
     printinfo("┌ Testing `Model`..."; prefix="│ ")
@@ -143,5 +141,5 @@ end
 
     test_schedule(SCHEDULE)
 
-    printinfo("└ Done.", pop=true)
+    printinfo("└ Done."; pop=true)
 end

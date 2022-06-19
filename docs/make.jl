@@ -1,7 +1,9 @@
 using TimetableSolver
 using Documenter
 
-DocMeta.setdocmeta!(TimetableSolver, :DocTestSetup, :(using TimetableSolver); recursive=true)
+DocMeta.setdocmeta!(
+    TimetableSolver, :DocTestSetup, :(using TimetableSolver); recursive=true
+)
 
 makedocs(;
     modules=[TimetableSolver],
@@ -18,15 +20,8 @@ makedocs(;
         "Tutorial" => "tutorial.md",
         "How-To" => "how_to.md",
         "Explanation" => "explanation.md",
-        "Reference" => [
-            "reference/index.md",
-            "reference/types.md",
-            "reference/solver.md",
-        ]
+        "Reference" => ["reference/index.md", "reference/types.md", "reference/solver.md"],
     ],
 )
 
-deploydocs(;
-    repo="github.com/Sushant-Padha/TimetableSolver.jl",
-    devbranch="master",
-)
+deploydocs(; repo="github.com/Sushant-Padha/TimetableSolver.jl", devbranch="master")

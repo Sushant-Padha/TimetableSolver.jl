@@ -28,23 +28,21 @@ Immutable struct to store data related to divisions, variables and values,
 and their mappings from ints to strings, because the solver only works on ints.
 
 Fields:
-- `divvarval_maps::OrderedDict{Symbol,OrderedDict}`: Keys are a symbol `:subject` or `:teacher`.
-  Values are map of ints (div) to 2-tuple of vecs of ints (var, val).
-- `divvarval_mapstrs::OrderedDict{Symbol,OrderedDict}`: Same as `div_var_val_map` but with strings instead of ints.
 
-- `alldivs::Vector{Int}`: Vector of all divs as ints.
-- `allvars::Vector{Int}`: Vector of all vars as ints. (no `:subject` `:teacher` bifurcation)
-- `allvals::Vector{Int}`: Vector of all vals as ints. (no `:subject` `:teacher` bifurcation)
+  - `divvarval_maps::OrderedDict{Symbol,OrderedDict}`: Keys are a symbol `:subject` or `:teacher`.
+    Values are map of ints (div) to 2-tuple of vecs of ints (var, val).
 
-- `divmap::OrderedDict{Int,String}`: Map from div ints to strings.
-- `varmap::OrderedDict{Int,String}`: Map from variable ints to strings.
-- `valmap::OrderedDict{Int,String}`: Map from values ints to strings.
-- `inversedivmap::OrderedDict{String,Int}`: Inverted `divmap`.
-- `inversevarmap::OrderedDict{String,Int}`: Inverted `varmap`.
-- `inversevalmap::OrderedDict{String,Int}`: Inverted `valmap`.
-
-- `schedule::Schedule`: Schedule type instance.
-
+  - `divvarval_mapstrs::OrderedDict{Symbol,OrderedDict}`: Same as `div_var_val_map` but with strings instead of ints.
+  - `alldivs::Vector{Int}`: Vector of all divs as ints.
+  - `allvars::Vector{Int}`: Vector of all vars as ints. (no `:subject` `:teacher` bifurcation)
+  - `allvals::Vector{Int}`: Vector of all vals as ints. (no `:subject` `:teacher` bifurcation)
+  - `divmap::OrderedDict{Int,String}`: Map from div ints to strings.
+  - `varmap::OrderedDict{Int,String}`: Map from variable ints to strings.
+  - `valmap::OrderedDict{Int,String}`: Map from values ints to strings.
+  - `inversedivmap::OrderedDict{String,Int}`: Inverted `divmap`.
+  - `inversevarmap::OrderedDict{String,Int}`: Inverted `varmap`.
+  - `inversevalmap::OrderedDict{String,Int}`: Inverted `valmap`.
+  - `schedule::Schedule`: Schedule type instance.
 """
 struct VariableData
     divvarval_maps::OrderedDict{Symbol,OrderedDict}
@@ -75,14 +73,8 @@ function VariableData(schedule::Schedule)::VariableData
 
     # extract str representations of all data
     alldiv_strs = Vector{String}([])
-    allvar_strs = OrderedDict{Symbol,Vector{String}}(
-        :subject => [],
-        :teacher => []
-    )
-    allval_strs = OrderedDict{Symbol,Vector{String}}(
-        :subject => [],
-        :teacher => []
-    )
+    allvar_strs = OrderedDict{Symbol,Vector{String}}(:subject => [], :teacher => [])
+    allval_strs = OrderedDict{Symbol,Vector{String}}(:subject => [], :teacher => [])
     # symbol is `:subject` or `:teacher`
     # symbol_map is div_var_val_map_strs but for either subject or teacher only
     for (symbol, symbolmap) in divvarval_mapstrs
@@ -109,12 +101,12 @@ function VariableData(schedule::Schedule)::VariableData
     # define int representations of all data
     # and int to str mappings
     alldivs = Vector{Int}(1:length(alldiv_strs))
-    divmap::OrderedDict{Int,String} = OrderedDict(
-        enumerate(alldiv_strs)
-    )
+    divmap::OrderedDict{Int,String} = OrderedDict(enumerate(alldiv_strs))
     inversedivmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in divmap)
 
-    allvars = Vector{Int}(1:(length(allvar_strs[:subject]))+length(allvar_strs[:teacher]))
+    allvars = Vector{Int}(
+        1:((length(allvar_strs[:subject])) + length(allvar_strs[:teacher]))
+    )
     # nested list comp
     # return var_str for var_str in symbol_var_strs which are in all_var_strs
     varmap::OrderedDict{Int,String} = OrderedDict(
@@ -122,7 +114,9 @@ function VariableData(schedule::Schedule)::VariableData
     )
     inversevarmap::OrderedDict{String,Int} = OrderedDict(v => k for (k, v) in varmap)
 
-    allvals = Vector{Int}(1:(length(allval_strs[:subject]))+length(allval_strs[:teacher]))
+    allvals = Vector{Int}(
+        1:((length(allval_strs[:subject])) + length(allval_strs[:teacher]))
+    )
     # nested list comp (same as for `var_map`)
     valmap::OrderedDict{Int,String} = OrderedDict(
         enumerate([v for (_, val_strs) in allval_strs for v in val_strs])
@@ -132,8 +126,7 @@ function VariableData(schedule::Schedule)::VariableData
     # dict to store ordereddict of all vars and vals mapped to divs
     # dict keys are :subject and :teacher
     divvarval_maps::OrderedDict{Symbol,OrderedDict} = OrderedDict(
-        :subject => OrderedDict(),
-        :teacher => OrderedDict()
+        :subject => OrderedDict(), :teacher => OrderedDict()
     )
 
     # generate values for div_var_val_map
@@ -154,10 +147,18 @@ function VariableData(schedule::Schedule)::VariableData
     end
 
     return VariableData(
-        divvarval_maps, divvarval_mapstrs,
-        alldivs, allvars, allvals,
-        divmap, varmap, valmap, inversedivmap, inversevarmap, inversevalmap,
-        schedule
+        divvarval_maps,
+        divvarval_mapstrs,
+        alldivs,
+        allvars,
+        allvals,
+        divmap,
+        varmap,
+        valmap,
+        inversedivmap,
+        inversevarmap,
+        inversevalmap,
+        schedule,
     )
 end
 
@@ -172,11 +173,8 @@ The first-order values (`OrderedDict`), are mappings from division string, to a 
 function get_divvarval_mapstrs(schedule::Schedule)::OrderedDict{Symbol,OrderedDict}
     # dict to store ordereddict of all vars and vals mapped to divs
     # dict keys are :subject and :teacher
-    divvarval_maps::OrderedDict{
-        Symbol,OrderedDict{String,Tuple{Vector{String},Vector{String}}}
-    } = OrderedDict(
-        :subject => OrderedDict(),
-        :teacher => OrderedDict()
+    divvarval_maps::OrderedDict{Symbol,OrderedDict{String,Tuple{Vector{String},Vector{String}}}} = OrderedDict(
+        :subject => OrderedDict(), :teacher => OrderedDict()
     )
 
     # fill divvarval_maps with data
@@ -225,52 +223,58 @@ end
 Return a JuMP model created using `vardata`, and an OrderedDict of the variables defined in the model.
 
 # Arguments
-- `vardata::VariableData`: VariableData object representing the variables and constraints to be added to the model.
-- `timeout::Float64=Inf`: Float representing the maximum time to run the model.
-- `all_solutions::Bool=false`: Bool representing whether to return all solutions or just the first.
+
+  - `vardata::VariableData`: VariableData object representing the variables and constraints to be added to the model.
+  - `timeout::Float64=Inf`: Float representing the maximum time to run the model.
+  - `all_solutions::Bool=false`: Bool representing whether to return all solutions or just the first.
 
 # Notes
-- Create a model with the correct variables, and adds constraints to the model.  
-- The variables defined are anonymous, so they are stored in an OrderedDict mapped to their int representation.
+
+  - Create a model with the correct variables, and adds constraints to the model.
+  - The variables defined are anonymous, so they are stored in an OrderedDict mapped to their int representation.
 """
-function get_model(vardata::VariableData, timeout::Float64 = Inf, all_solutions::Bool = false
+function get_model(
+    vardata::VariableData, timeout::Float64=Inf, all_solutions::Bool=false
 )::Tuple{Model,OrderedDict}
     # create a constraint solver model and set ConstraintSolver as the optimizer
-    m = Model(optimizer_with_attributes(CS.Optimizer,
-        # logging vector containing :Info and/or :Table or empty
-        "logging" => [],
+    m = Model(
+        optimizer_with_attributes(
+            CS.Optimizer,
+            # logging vector containing :Info and/or :Table or empty
+            "logging" => [],
 
-        # whether to return all possible solutions
-        "all_solutions" => all_solutions,
+            # whether to return all possible solutions
+            "all_solutions" => all_solutions,
 
-        # seed for random operations given for reproducibility
-        "seed" => 0,
-        # default to :Auto
-        # "traverse_strategy" => :BFS,
-        # "traverse_strategy"=> :DFS,
-        # "traverse_strategy"=> :DBFS,
+            # seed for random operations given for reproducibility
+            "seed" => 0,
+            # default to :Auto
+            # "traverse_strategy" => :BFS,
+            # "traverse_strategy"=> :DFS,
+            # "traverse_strategy"=> :DBFS,
 
-        # default :Auto
-        # "branch_split"=>:Smallest,
-        # "branch_split"=>:Biggest,
-        # "branch_split" => :InHalf,
+            # default :Auto
+            # "branch_split"=>:Smallest,
+            # "branch_split"=>:Biggest,
+            # "branch_split" => :InHalf,
 
-        "branch_strategy" => :IMPS, # default
+            "branch_strategy" => :IMPS, # default
 
-        # simplify alldifferent, etc. constraints
-        "simplify" => true, # default
+            # simplify alldifferent, etc. constraints
+            "simplify" => true, # default
 
-        # max seconds before exiting with status `MOI.TIME_LIMIT`
-        "time_limit" => timeout,
+            # max seconds before exiting with status `MOI.TIME_LIMIT`
+            "time_limit" => timeout,
 
-        # backtracking options
-        "backtrack" => true, # default
-        "backtrack_sorting" => true, # default
+            # backtracking options
+            "backtrack" => true, # default
+            "backtrack_sorting" => true, # default
 
-        # "lp_optimizer" => cbc_optimizer,
-        # "lp_optimizer" => glpk_optimizer,
-        # "lp_optimizer" => ipopt_optimizer,
-    ))
+            # "lp_optimizer" => cbc_optimizer,
+            # "lp_optimizer" => glpk_optimizer,
+            # "lp_optimizer" => ipopt_optimizer,
+        ),
+    )
 
     # define variables
     modelvars = define_variables!(m, vardata)
@@ -288,10 +292,10 @@ Define variables in the model `m` using the `vardata` object.
 Return an OrderedDict mapping the int representation of the variable to the variable reference.
 
 # Notes
-- Modify the model `m` in place.
+
+  - Modify the model `m` in place.
 """
-function define_variables!(
-    m::Model, vardata::VariableData)::OrderedDict{Int,VariableRef}
+function define_variables!(m::Model, vardata::VariableData)::OrderedDict{Int,VariableRef}
     divvarval_maps = vardata.divvarval_maps
     varmap = vardata.varmap
 
@@ -322,9 +326,12 @@ end
 Define subject constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
 
 # Notes
-- Modify the model `m` in place.
+
+  - Modify the model `m` in place.
 """
-function define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+function define_subjectconstraints!(
+    m::Model, modelvars::OrderedDict, vardata::VariableData
+)::Nothing
     schedule = vardata.schedule
     divvarval_maps = vardata.divvarval_maps
     varmap = vardata.varmap
@@ -335,8 +342,7 @@ function define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::V
         # define terms
         div = inversedivmap[div_str]
         counts = OrderedDict{Int,Int}(
-            inversevalmap[subject_str] => count
-            for (subject_str, count) in tt.subjectcounts
+            inversevalmap[subject_str] => count for (subject_str, count) in tt.subjectcounts
         )
         vars = divvarval_maps[:subject][div][1]
         vals = collect(Int, keys(counts))
@@ -382,9 +388,12 @@ end
 Define subject-teacher constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
 
 # Notes
-- Modify the model `m` in place.
+
+  - Modify the model `m` in place.
 """
-function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+function define_subjectteacherconstraints!(
+    m::Model, modelvars::OrderedDict, vardata::VariableData
+)::Nothing
     divvarval_maps = vardata.divvarval_maps
     divmap = vardata.divmap
     inversevalmap = vardata.inversevalmap
@@ -405,7 +414,6 @@ function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, var
             subjectteachers[subject_int] = teacher_ints
         end
         subjectteacher_maps[div] = subjectteachers
-
     end
 
     # iterate over every set of subject variables (by div)
@@ -427,7 +435,9 @@ function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, var
         for (svar, tvar) in zip(subjectvars, teachervars)
             # model vars corresponding to this pair of subject and teacher vars
             (modelsvar, modeltvar) = modelvars[svar], modelvars[tvar]
-            constr = @constraint(m, [modelsvar, modeltvar] in CS.TableSet(subjectteacherpairs))
+            constr = @constraint(
+                m, [modelsvar, modeltvar] in CS.TableSet(subjectteacherpairs)
+            )
             # set a name for the constraint for debugging purposes
             constrname = "Subject Teacher [$(div_str)]"
             set_name(constr, constrname)
@@ -443,9 +453,12 @@ end
 Define teacher constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
 
 # Notes
-- Modify the model `m` in place.
+
+  - Modify the model `m` in place.
 """
-function define_teacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+function define_teacherconstraints!(
+    m::Model, modelvars::OrderedDict, vardata::VariableData
+)::Nothing
     # variables with same row,period should have different teachers
     divvarval_maps = vardata.divvarval_maps
     varmap = vardata.varmap
@@ -484,11 +497,14 @@ end
 Define all constraints in the model `m` using the `vardata` object and the model variables `modelvars`.
 
 # Notes
-- Modify the model `m` in place.
-- Call [`define_subjectconstraints!`](@ref), [`define_subjectteacherconstraints!`](@ref)
-  and [`define_teacherconstraints!`](@ref) internally, in the respective order.
+
+  - Modify the model `m` in place.
+  - Call [`define_subjectconstraints!`](@ref), [`define_subjectteacherconstraints!`](@ref)
+    and [`define_teacherconstraints!`](@ref) internally, in the respective order.
 """
-function define_constraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
+function define_constraints!(
+    m::Model, modelvars::OrderedDict, vardata::VariableData
+)::Nothing
     define_subjectconstraints!(m, modelvars, vardata)
 
     define_subjectteacherconstraints!(m, modelvars, vardata)
@@ -504,11 +520,13 @@ end
 Return a solution and status code after solving the given model `m` and using model variables `modelvars` and variable data `vardata` to access the solution values.
 
 # Notes
-- Model is optimally solved only if the status code is [`MOI.OPTIMAL`](https://jump.dev/JuMP.jl/stable/moi/reference/models/#MathOptInterface.TerminationStatusCode).
-- Solution is a mapping from variable to its value (both as ints).
+
+  - Model is optimally solved only if the status code is [`MOI.OPTIMAL`](https://jump.dev/JuMP.jl/stable/moi/reference/models/#MathOptInterface.TerminationStatusCode).
+  - Solution is a mapping from variable to its value (both as ints).
 """
 function get_solution(
-    m::Model, modelvars::OrderedDict, vardata::VariableData)::Tuple{OrderedDict{Int,Int},MOI.TerminationStatusCode}
+    m::Model, modelvars::OrderedDict, vardata::VariableData
+)::Tuple{OrderedDict{Int,Int},MOI.TerminationStatusCode}
     # solve model
     optimize!(m)
 
@@ -545,10 +563,12 @@ end
 Return a solution in the form of a mapping from variable to its value (both as strings).
 
 # Notes
-- Convert an `Int=>Int` solution to a `String=>String` one using the `inverse*` mappings defined in `vardata`.
+
+  - Convert an `Int=>Int` solution to a `String=>String` one using the `inverse*` mappings defined in `vardata`.
 """
 function convertsolution(
-    rawsolution::OrderedDict{Int,Int}, vardata::VariableData)::OrderedDict{String,String}
+    rawsolution::OrderedDict{Int,Int}, vardata::VariableData
+)::OrderedDict{String,String}
     solution = OrderedDict{String,String}()
     # iterate over every var and val in solution
     for (var, val) in rawsolution
@@ -567,7 +587,8 @@ end
 Apply a solution (of strings) to the given schedule.
 
 # Notes
-- Modify the schedule in place.
+
+  - Modify the schedule in place.
 """
 function applysolution!(schedule::Schedule, solution::OrderedDict{String,String})::Nothing
     # iterate over every var and val in solution
@@ -583,15 +604,17 @@ end
 Solve a given schedule in place and return a `String=>String` solution and status code.
 
 # Arguments
-- `schedule::Schedule`: Schedule object representing the problem.
-- `timeout::Float64=Inf`: Float representing the maximum time to run the model.
-- `all_solutions::Bool=false`: Bool representing whether to return all solutions or just the first.
+
+  - `schedule::Schedule`: Schedule object representing the problem.
+  - `timeout::Float64=Inf`: Float representing the maximum time to run the model.
+  - `all_solutions::Bool=false`: Bool representing whether to return all solutions or just the first.
 
 # Notes
-- Schedule is optimally solved only if the status code is [`MOI.OPTIMAL`](https://jump.dev/JuMP.jl/stable/moi/reference/models/#MathOptInterface.TerminationStatusCode).
+
+  - Schedule is optimally solved only if the status code is [`MOI.OPTIMAL`](https://jump.dev/JuMP.jl/stable/moi/reference/models/#MathOptInterface.TerminationStatusCode).
 """
 function solve!(
-    schedule::Schedule, timeout::Float64 = Inf, all_solutions::Bool = false
+    schedule::Schedule, timeout::Float64=Inf, all_solutions::Bool=false
 )::Tuple{OrderedDict{String,String},MOI.TerminationStatusCode}
     # get vardata
     vardata = VariableData(schedule)

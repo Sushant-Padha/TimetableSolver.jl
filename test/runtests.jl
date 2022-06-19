@@ -1,10 +1,10 @@
 using TimetableSolver
 using Test
 
-"""Array of all test files to run."""
-const TESTFILENAMES = [
-    "solver.jl", "types.jl"
-]
+"""
+Array of all test files to run.
+"""
+const TESTFILENAMES = ["solver.jl", "types.jl"]
 
 function runtests(testfilenames)
     for f in testfilenames
@@ -22,6 +22,6 @@ end
 
 _, time, bytes, _... = @timed runtests(TESTFILENAMES)
 
-time, mb = round(time, digits=3), round(bytes/1024/1024, digits=0)
+time, mb = round(time; digits=3), round(bytes / 1024 / 1024; digits=0)
 
 printstyled("All tests took $time seconds, and used $(mb) megabytes.\n\n"; bold=true)
