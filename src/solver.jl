@@ -7,15 +7,6 @@ using DataStructures: OrderedDict
 
 const CS = ConstraintSolver
 
-"""
-    VarRefOrExpr
-
-Represents either a model variable reference or expression reference.
-
-Alias for union of VariableRef and AffExpr.
-"""
-VarRefOrExpr = Union{VariableRef,AffExpr}
-
 #=
 Each variable is a string of the form:
     `{div}_{row}_{period}_{type}`,
@@ -291,21 +282,21 @@ function get_model(vardata::VariableData, timeout::Float64 = Inf, all_solutions:
 end
 
 """
-    define_variables!(m::Model, vardata::VariableData)::OrderedDict{Int,VarRefOrExpr}
+    define_variables!(m::Model, vardata::VariableData)::OrderedDict{Int,VariableRef}
 
 Define variables in the model `m` using the `vardata` object.
-Return an OrderedDict mapping the int representation of the variable to the variable reference/expression reference.
+Return an OrderedDict mapping the int representation of the variable to the variable reference.
 
 # Notes
 - Modify the model `m` in place.
-- See [`VarRefOrExpr`](@ref).
 """
 function define_variables!(
-    m::Model, vardata::VariableData)::OrderedDict{Int,VarRefOrExpr}
+    m::Model, vardata::VariableData)::OrderedDict{Int,VariableRef}
     divvarval_maps = vardata.divvarval_maps
+    varmap = vardata.varmap
 
     # mapping variable int repr to its model variableref
-    modelvars = OrderedDict{Int,VarRefOrExpr}()
+    modelvars = OrderedDict{Int,VariableRef}()
 
     for (symbol, symbolmap) in divvarval_maps
         for (div, (vars, vals)) in symbolmap
@@ -313,7 +304,11 @@ function define_variables!(
             currentmodelvars = @variable(m, [vars], CS.Integers(vals))
             # allocate them to the value of var in modelvars one by one
             for v in vars
-                modelvars[v] = currentmodelvars[v]
+                varref = currentmodelvars[v]
+                # set a name for the variable for debugging purposes
+                varname = varmap[v]
+                set_name(varref, varname)
+                modelvars[v] = varref
             end
         end
     end
@@ -332,6 +327,8 @@ Define subject constraints in the model `m` using the `vardata` object and the m
 function define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     schedule = vardata.schedule
     divvarval_maps = vardata.divvarval_maps
+    varmap = vardata.varmap
+    valmap = vardata.valmap
     inversedivmap = vardata.inversedivmap
     inversevalmap = vardata.inversevalmap
     for (div_str, tt) in schedule.data
@@ -349,18 +346,32 @@ function define_subjectconstraints!(m::Model, modelvars::OrderedDict, vardata::V
         # so instead of setting an int as value of each var
         # each var has `vals` corresponding binary variables
         binvars = @variable(m, [vars, vals], Bin)
+        # set a name for binary var for debugging purposes
+        for var in vars, val in vals
+            binvarref = binvars[var, val]
+            varname = varmap[var]
+            valname = valmap[val]
+            binvarname = "$(varname)[$(valname)]"
+            set_name(binvarref, binvarname)
+        end
+        # set a names for the constraints for debugging purposes
         # add constraint to only choose one val
-        @constraint(m, [i = vars], sum(binvars[i, :]) == 1)
+        uniquevalconstrs = @constraint(m, [i = vars], sum(binvars[i, :]) == 1)
+        for constr in uniquevalconstrs
+            constrname = "Unique Subject [$(div_str)]"
+            set_name(constr, constrname)
+        end
         # add constraint to only choose that val `counts[val]` times
-        @constraint(m, [j = vals], sum(binvars[:, j]) == counts[j])
-        # array of expressions that actually store the value of var as int
-        exprs = @expression(m, [i = vars], sum(j * binvars[i, j] for j in vals))
-        # replace the corresponding vars in modelvars with exprs
-        for var in vars
-            # delete the var from the model
-            delete(m, modelvars[var])
-            # set the var to an expr defined above
-            modelvars[var] = exprs[var]
+        countvalconstrs = @constraint(m, [j = vals], sum(binvars[:, j]) == counts[j])
+        for (val, constr) in zip(vals, countvalconstrs)
+            val_str = valmap[val]
+            constrname = "Counts Subject [$(div_str)] [$(val_str)]"
+            set_name(constr, constrname)
+        end
+        # set the original variables to equal to an expression of these binary variables
+        for v in vars
+            mvar = modelvars[v]
+            @constraint(m, mvar == sum(j * binvars[v, j] for j in vals))
         end
     end
 end
@@ -375,6 +386,7 @@ Define subject-teacher constraints in the model `m` using the `vardata` object a
 """
 function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     divvarval_maps = vardata.divvarval_maps
+    divmap = vardata.divmap
     inversevalmap = vardata.inversevalmap
     schedule = vardata.schedule
 
@@ -398,6 +410,7 @@ function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, var
 
     # iterate over every set of subject variables (by div)
     for (div, (subjectvars, _)) in divvarval_maps[:subject]
+        div_str = divmap[div]
         # generate pairs of all possible subject teacher combinations
         # and store them in a matrix
         numpairs = sum(length.(values(subjectteacher_maps[div])))
@@ -414,7 +427,10 @@ function define_subjectteacherconstraints!(m::Model, modelvars::OrderedDict, var
         for (svar, tvar) in zip(subjectvars, teachervars)
             # model vars corresponding to this pair of subject and teacher vars
             (modelsvar, modeltvar) = modelvars[svar], modelvars[tvar]
-            @constraint(m, [modelsvar, modeltvar] in CS.TableSet(subjectteacherpairs))
+            constr = @constraint(m, [modelsvar, modeltvar] in CS.TableSet(subjectteacherpairs))
+            # set a name for the constraint for debugging purposes
+            constrname = "Subject Teacher [$(div_str)]"
+            set_name(constr, constrname)
         end
     end
 
@@ -432,6 +448,7 @@ Define teacher constraints in the model `m` using the `vardata` object and the m
 function define_teacherconstraints!(m::Model, modelvars::OrderedDict, vardata::VariableData)::Nothing
     # variables with same row,period should have different teachers
     divvarval_maps = vardata.divvarval_maps
+    varmap = vardata.varmap
 
     # following block of code creates a list of vars
     # grouped by the same row and period
@@ -447,10 +464,15 @@ function define_teacherconstraints!(m::Model, modelvars::OrderedDict, vardata::V
         if length(rowperiodvars) == 0
             break
         end
+        # get the row number and period number
+        _, rownum, periodnum, _ = split(varmap[rowperiodvars[1]], "_")
         # now get model vars from these vars
         rowperiodmodelvars = [modelvars[x] for x in rowperiodvars]
         # add alldifferent constraint
-        @constraint(m, rowperiodmodelvars in CS.AllDifferent())
+        constr = @constraint(m, rowperiodmodelvars in CS.AllDifferent())
+        # set a name for the constraint for debugging purposes
+        constrname = "Unique Teacher [$(rownum),$(periodnum)]"
+        set_name(constr, constrname)
     end
 
     return nothing

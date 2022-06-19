@@ -1,7 +1,6 @@
 # Solver
 
 ```@docs
-TimetableSolver.VarRefOrExpr
 TimetableSolver.VariableData
 TimetableSolver.VariableData(schedule::Schedule)
 TimetableSolver.get_divvarval_mapstrs(schedule::Schedule)
